@@ -182,7 +182,8 @@ Test Precision: 0.99
 Test Recall:    0.99
 Test F1-score:  0.99
 ```
-
+Model URL on Google Drive:
+https://drive.google.com/file/d/1-uf26t8kUTh60O16q8eVGdaeD9oOHlzY/view?usp=sharing
 ---
 
 ## 🌱 **Carbon-Aware Machine Learning**
