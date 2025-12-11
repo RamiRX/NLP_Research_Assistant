@@ -91,102 +91,113 @@ This avoids class imbalance and prevents overfitting during classifier training.
 
 ---
 
-SciBERT Classification Module
+---
 
-This module implements the core binary classifier used in Doculizer to determine whether an academic paper is NLP-related or not NLP-related.
-The classifier acts as the first logical gate of the system: only papers classified as NLP-related proceed to the downstream pipeline.
+# 📘 **SciBERT Classification Module**
 
-🔬 Model Choice: Why SciBERT?
+This module implements the **core binary classifier** used in *Doculizer* to determine whether an academic paper is **NLP-related** or **not NLP-related**.
+The classifier acts as the **first logical gate** of the system: only papers classified as NLP-related proceed to the downstream pipeline.
 
-We selected SciBERT (allenai/scibert_scivocab_uncased) for fine-tuning because:
+---
 
-It is pretrained on 1.14M scientific papers, making it inherently aligned with our domain.
+## 🔬 **Model Choice: Why SciBERT?**
 
-It performs significantly better than general-domain BERT models on scientific tasks.
+We selected **SciBERT (allenai/scibert_scivocab_uncased)** for fine-tuning because:
 
-It requires minimal compute to achieve high accuracy on short-text classification (title + abstract).
+* It is **pretrained on 1.14M scientific papers**, making it inherently aligned with our domain.
+* It performs significantly better than general-domain BERT models on scientific tasks.
+* It requires **minimal compute** to achieve high accuracy on short-text classification (title + abstract).
 
 SciBERT offers the best balance between:
 
-Performance
+* **Performance**
+* **Training efficiency**
+* **Low carbon footprint**
+* **Domain adaptation**
 
-Training efficiency
+---
 
-Low carbon footprint
+## ⚙️ **Training Setup**
 
-Domain adaptation
-
-⚙️ Training Setup
-Component	Configuration
-Base model	SciBERT (uncased scientific vocabulary)
-Task	Binary classification (NLP vs. Non-NLP)
-Input	Title + Abstract concatenated
-Max sequence lengths tested	16, 32, 64
-Optimizer	AdamW
-Loss function	Cross-entropy
-Batch size	8
-Epochs tested	3, 5, 10
-Validation split	15%
-Test split	20%
+| Component                   | Configuration                           |
+| --------------------------- | --------------------------------------- |
+| Base model                  | SciBERT (uncased scientific vocabulary) |
+| Task                        | Binary classification (NLP vs. Non-NLP) |
+| Input                       | Title + Abstract concatenated           |
+| Max sequence lengths tested | 16, 32, 64                              |
+| Optimizer                   | AdamW                                   |
+| Loss function               | Cross-entropy                           |
+| Batch size                  | 8                                       |
+| Epochs tested               | 3, 5, 10                                |
+| Validation split            | 15%                                     |
+| Test split                  | 20%                                     |
 
 We trained multiple configurations to find the optimal trade-off between accuracy and energy consumption.
 
-📊 Evaluation Metrics
+---
+
+## 📊 **Evaluation Metrics**
 
 We report:
 
-Precision
+* **Precision**
+* **Recall**
+* **F1-score**
+* **Accuracy**
 
-Recall
+And additionally, we measured **CO₂ emissions** using the `codecarbon` library to ensure environmental transparency.
 
-F1-score
+---
 
-Accuracy
+## 🧪 **Ablation Study Results**
 
-And additionally, we measured CO₂ emissions using the codecarbon library to ensure environmental transparency.
+### **Final Comparison of Experiments**
 
-🧪 Ablation Study Results
-Final Comparison of Experiments
-Experiment	Epochs	Max Tokens	Train F1	Val F1	Test F1	Carbon (g CO₂eq)
-Best (recommended)	3	64	1.00	0.99	0.99	1.965 g
-Exp 2	5	32	1.00	0.99	0.99	2.199 g
-Exp 3	5	16	1.00	0.98	0.97	4.958 g
-Exp 4	10	32	1.00	0.99	0.98	10.730 g
-🏆 Chosen Model
+| Experiment             | Epochs | Max Tokens | Train F1 | Val F1 | Test F1  | Carbon (g CO₂eq) |
+| ---------------------- | ------ | ---------- | -------- | ------ | -------- | ---------------- |
+| **Best (recommended)** | **3**  | **64**     | 1.00     | 0.99   | **0.99** | **1.965 g**      |
+| Exp 2                  | 5      | 32         | 1.00     | 0.99   | 0.99     | 2.199 g          |
+| Exp 3                  | 5      | 16         | 1.00     | 0.98   | 0.97     | 4.958 g          |
+| Exp 4                  | 10     | 32         | 1.00     | 0.99   | 0.98     | 10.730 g         |
+
+---
+
+## 🏆 **Chosen Model**
 
 We selected the configuration:
 
-SciBERT + 3 Epochs + 64 Max Tokens
+### **SciBERT + 3 Epochs + 64 Max Tokens**
 
 Because it provides:
 
-State-of-the-art performance on our dataset
-
-High generalization without overfitting
-
-Best environmental footprint
-
-Fast inference suitable for production
+* **State-of-the-art performance** on our dataset
+* **High generalization** without overfitting
+* **Best environmental footprint**
+* **Fast inference suitable for production**
 
 This model achieved:
 
+```
 Test Precision: 0.99
 Test Recall:    0.99
 Test F1-score:  0.99
+```
 
-🌱 Carbon-Aware Machine Learning
+---
 
-Training experiments were monitored using CodeCarbon, ensuring:
+## 🌱 **Carbon-Aware Machine Learning**
 
-Transparent reporting of energy consumption
+Training experiments were monitored using **CodeCarbon**, ensuring:
 
-Reduced environmental impact
+* Transparent reporting of energy consumption
+* Reduced environmental impact
+* Responsible ML practices aligned with modern research standards
 
-Responsible ML practices aligned with modern research standards| Experiment                     | Epochs | Max Tokens | Train F1 | Val F1 | Test F1 | Carbon (g CO₂eq) |
-| ------------------------------ | ------ | ---------- | -------- | ------ | ------- | ---------------- |
-| **Exp 1 – Best (recommended)** | 3      | 64         | 1.00     | 0.99   | 0.99    | **1.965 g**      |
-| **Exp 2**                      | 5      | 32         | 1.00     | 0.99   | 0.99    | **2.199 g**      |
-| **Exp 3**                      | 5      | 16         | 1.00     | 0.98   | 0.97    | **4.958 g**      |
-| **Exp 4**                      | 10     | 32         | 1.00     | 0.99   | 0.98    | **10.730 g**     |
+---
 
+
+
+لو بدك، فيني أكتب لك **قسم الـ API**،
+**قسم الـ evaluation visualizations**،
+أو **قسم الarchitecture** للـ README أيضاً.
 
