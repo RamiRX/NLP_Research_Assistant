@@ -198,7 +198,3 @@ Training experiments were monitored using **CodeCarbon**, ensuring:
 
 
 
-لو بدك، فيني أكتب لك **قسم الـ API**،
-**قسم الـ evaluation visualizations**،
-أو **قسم الarchitecture** للـ README أيضاً.
-
