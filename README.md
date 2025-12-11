@@ -1,6 +1,6 @@
 # NLP_Research_Assistant
 Official Repository of the Unsupervised Project
-#ي
+
 *A balanced scientific dataset for NLP vs. Non-NLP document classification*
 
 This repository contains the complete pipeline used to build a high-quality, balanced dataset for the **Doculizer** research assistant.  
