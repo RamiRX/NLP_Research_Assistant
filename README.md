@@ -250,5 +250,106 @@ We report standard ranking-based retrieval metrics at cutoff :
 ### ✅ Model Selection
 
 Based on the evaluation results, we selected **MPNet** (`all-mpnet-base-v2`) as the default semantic retriever. It achieves the highest nDCG@10 and MAP@10, indicating superior ranking quality and robustness. MiniLM remains available as a fallback for resource-constrained environments.
+---
 
+
+# Retrieval-Augmented Generation (RAG) Pipeline
+
+## 🎯 Objective
+
+The core objective of this system is to provide **evidence-grounded answers** to research questions. By combining dense retrieval with a Large Language Model (LLM), we implement a pipeline that filters and ranks scientific documents to ensure generated answers are strictly derived from retrieved scientific evidence, rather than external world knowledge.
+
+---
+
+## 🏗️ Overall Architecture
+
+The pipeline operates in a **closed-domain scientific QA** scenario and consists of four main stages:
+
+1. **Document Chunking:** Segmenting long texts.
+2. **Semantic Retrieval:** Using SBERT for ranking.
+3. **Prompt Construction:** Selecting evidence and building constraints.
+4. **Generation:** Producing answers via LLM.
+
+---
+
+## ⚙️ Pipeline Components
+
+### 1. Document Chunking Strategy
+
+Scientific documents are segmented into overlapping chunks using a fixed-size sliding window to manage computational efficiency and maintain semantic context.
+
+| Parameter | Value | Reason |
+| --- | --- | --- |
+| **Chunk Size** | 200 words | Aligns with standard scientific paragraph lengths (150-200 words). |
+| **Overlap** | 50 words | Prevents splitting coherent explanations (e.g., definitions + justifications). |
+
+> **Note:** The overlap ensures critical key phrases (e.g., references to *tensor dimensionality*, *linear maps*, or *inner products*) remain intact even if they appear near chunk boundaries.
+
+### 2. Semantic Retrieval with SBERT
+
+We utilize **Sentence-BERT** to encode text chunks into dense vectors and rank them via cosine similarity.
+
+* **Model:** `all-mpnet-base-v2`
+* Chosen for its superior performance on semantic similarity benchmarks compared to TF-IDF.
+* Captures sentence-level semantics, paraphrasing, and conceptual similarity.
+
+
+* **Diversified Retrieval:** We enforce a maximum number of retrieved chunks *per document* to ensure broader coverage and reduce redundancy.
+
+### 3. Evidence-Based Prompt Construction
+
+Retrieved chunks are injected into a structured prompt that strictly constrains the LLM behavior:
+
+* ✅ **Constraint:** Use *only* provided evidence.
+* 🚫 **Constraint:** Avoid hallucination or prior external knowledge.
+* 📝 **Constraint:** Cite sources explicitly using evidence identifiers.
+
+Each evidence block contains the **Document ID**, **Chunk Index**, and the **Truncated Text**.
+
+### 4. Answer Generation (LLM)
+
+We employ **`Mistral-7B-Instruct-v0.2`** as the generative engine.
+
+**Why Mistral-7B?**
+
+* **Instruction Following:** Strong adherence to complex prompts.
+* **Reasoning:** Competitive capabilities for scientific text analysis.
+* **Transparency:** Open-weight model allowing for reproducible experimentation.
+* **Efficiency:** Favorable performance-to-cost ratio.
+
+The system uses **token streaming** to generate answers incrementally, mirroring real-time academic assistant behavior.
+
+---
+
+## 🔍 Evidence Grounding & Explainability
+
+Transparency is a cornerstone of this pipeline. Unlike black-box systems, every answer includes:
+
+1. The generated text.
+2. A list of evidence chunks used.
+3. Similarity scores for each retrieved chunk.
+
+This allows users to trace every claim back to its specific source document.
+
+---
+
+## 🆚 Relation to Prior Work
+
+Unlike commercial tools like **NotebookLM** or **Semantic Scholar AI**, our approach offers:
+
+* **Full Control:** Operates on a user-defined corpus.
+* **Exposed Pipeline:** Full visibility into retrieval and generation steps.
+* **Research Platform:** Enables systematic evaluation of individual components (Retriever vs. Generator).
+
+---
+
+## ⚠️ Current Limitations
+
+* **Focus:** The current iteration prioritizes **correctness and grounding**.
+* **Optimization:** Speed optimization is not yet the primary focus.
+* **Evaluation:** End-to-end quality is assessed separately using retrieval metrics and LLM-based judges.
+
+---
+
+### هل تود مني أن أقوم بإنشاء ملف كود Python يحاكي جزء الـ "Chunking" المذكور أعلاه باستخدام مكتبة مثل LangChain؟
 
