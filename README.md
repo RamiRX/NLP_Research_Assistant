@@ -253,102 +253,101 @@ Based on the evaluation results, we selected **MPNet** (`all-mpnet-base-v2`) as 
 ---
 
 
-# Retrieval-Augmented Generation (RAG) Pipeline
 
-## 🎯 Objective
+Retrieval-Augmented Generation (RAG) Pipeline
 
-The core objective of this system is to provide **evidence-grounded answers** to research questions. By combining dense retrieval with a Large Language Model (LLM), we implement a pipeline that filters and ranks scientific documents to ensure generated answers are strictly derived from retrieved scientific evidence, rather than external world knowledge.
+### 🎯 Objective
 
----
+The primary goal of this system is to provide evidence-grounded answers to research questions. By combining dense retrieval with a Large Language Model (LLM), we implement a pipeline that filters and ranks scientific documents to ensure generated answers are strictly derived from retrieved scientific evidence, rather than external world knowledge.
 
-## 🏗️ Overall Architecture
+### 🏗️ Overall Architecture
 
-The pipeline operates in a **closed-domain scientific QA** scenario and consists of four main stages:
+The RAG pipeline reflects a closed-domain scientific QA scenario and consists of four main stages:
 
-1. **Document Chunking:** Segmenting long texts.
-2. **Semantic Retrieval:** Using SBERT for ranking.
-3. **Prompt Construction:** Selecting evidence and building constraints.
-4. **Generation:** Producing answers via LLM.
+Document Chunking: Intelligent segmentation of text.
 
----
+Semantic Retrieval: Using SBERT for dense vector ranking.
 
-## ⚙️ Pipeline Components
+Prompt Construction: Evidence selection and strict constraint injection.
 
-### 1. Document Chunking Strategy
+Answer Generation: Producing answers via a Large Language Model.
 
-Scientific documents are segmented into overlapping chunks using a fixed-size sliding window to manage computational efficiency and maintain semantic context.
+### ⚙️ Pipeline Components
 
-| Parameter | Value | Reason |
-| --- | --- | --- |
-| **Chunk Size** | 200 words | Aligns with standard scientific paragraph lengths (150-200 words). |
-| **Overlap** | 50 words | Prevents splitting coherent explanations (e.g., definitions + justifications). |
+1. Document Chunking Strategy
 
-> **Note:** The overlap ensures critical key phrases (e.g., references to *tensor dimensionality*, *linear maps*, or *inner products*) remain intact even if they appear near chunk boundaries.
+Scientific documents are typically long and structured around coherent argumentative units. Feeding entire documents to the retriever or LLM introduces semantic noise and computational inefficiency.
 
-### 2. Semantic Retrieval with SBERT
+We employ a Sentence-Based Chunking Strategy. Unlike fixed-size word chunking, this approach preserves sentence boundaries to maintain the integrity of theoretical explanations.
 
-We utilize **Sentence-BERT** to encode text chunks into dense vectors and rank them via cosine similarity.
+FeatureConfigurationRationaleStrategySentence-basedPrevents fragmenting definitions or math explanations across chunks.Target Size~200 wordsBalances context window usage with semantic precision.OverlapNoneSemantic continuity is preserved via sentence grouping; redundancy is unnecessary here.
 
-* **Model:** `all-mpnet-base-v2`
-* Chosen for its superior performance on semantic similarity benchmarks compared to TF-IDF.
-* Captures sentence-level semantics, paraphrasing, and conceptual similarity.
+2. Semantic Retrieval with SBERT
 
+Each text chunk is encoded into a dense vector using Sentence-BERT, and semantic relevance is computed using cosine similarity.
 
-* **Diversified Retrieval:** We enforce a maximum number of retrieved chunks *per document* to ensure broader coverage and reduce redundancy.
+Model: all-mpnet-base-v2
 
-### 3. Evidence-Based Prompt Construction
+Selected for strong performance on information retrieval benchmarks.
+
+Captures sentence-level semantics, paraphrasing, and conceptual similarity (unlike TF-IDF).
+
+Diversified Retrieval: We enforce a maximum number of retrieved chunks per document to ensure broader coverage and reduce redundancy in the evidence set.
+
+3. Evidence-Based Prompt Construction
 
 Retrieved chunks are injected into a structured prompt that strictly constrains the LLM behavior:
 
-* ✅ **Constraint:** Use *only* provided evidence.
-* 🚫 **Constraint:** Avoid hallucination or prior external knowledge.
-* 📝 **Constraint:** Cite sources explicitly using evidence identifiers.
+### ✅ Constraint: Use only the provided evidence.
 
-Each evidence block contains the **Document ID**, **Chunk Index**, and the **Truncated Text**.
+### 🚫 Constraint: Avoid hallucination or reliance on prior external knowledge.
 
-### 4. Answer Generation (LLM)
+### 📝 Constraint: Explicitly cite sources using evidence identifiers.
 
-We employ **`Mistral-7B-Instruct-v0.2`** as the generative engine.
+Each evidence block passed to the model includes the Document ID, Chunk Index, and Truncated Text.
 
-**Why Mistral-7B?**
+4. Answer Generation (LLM)
 
-* **Instruction Following:** Strong adherence to complex prompts.
-* **Reasoning:** Competitive capabilities for scientific text analysis.
-* **Transparency:** Open-weight model allowing for reproducible experimentation.
-* **Efficiency:** Favorable performance-to-cost ratio.
+We utilize Mistral-7B-Instruct-v0.2 as the generative engine.
 
-The system uses **token streaming** to generate answers incrementally, mirroring real-time academic assistant behavior.
+Why Mistral-7B?
 
----
+Instruction Following: Strong adherence to complex grounding constraints.
 
-## 🔍 Evidence Grounding & Explainability
+Reasoning: Competitive capabilities for scientific text.
 
-Transparency is a cornerstone of this pipeline. Unlike black-box systems, every answer includes:
+Transparency: Open-weight architecture enabling reproducible research.
 
-1. The generated text.
-2. A list of evidence chunks used.
-3. Similarity scores for each retrieved chunk.
+Efficiency: Favorable trade-off between performance and cost.
 
-This allows users to trace every claim back to its specific source document.
+Note: The system uses token streaming to generate answers incrementally, mirroring the interactive experience of an academic assistant.
 
----
+### 🔍 Evidence Grounding & Explainability
 
-## 🆚 Relation to Prior Work
+Transparency is a core design principle. For every query, the system outputs:
 
-Unlike commercial tools like **NotebookLM** or **Semantic Scholar AI**, our approach offers:
+The final generated answer.
 
-* **Full Control:** Operates on a user-defined corpus.
-* **Exposed Pipeline:** Full visibility into retrieval and generation steps.
-* **Research Platform:** Enables systematic evaluation of individual components (Retriever vs. Generator).
+The list of evidence chunks used.
 
----
+Similarity scores for each retrieved chunk.
 
-## ⚠️ Current Limitations
+This allows users to trace every claim back to its specific source document, which is critical for scientific validity.
 
-* **Focus:** The current iteration prioritizes **correctness and grounding**.
-* **Optimization:** Speed optimization is not yet the primary focus.
-* **Evaluation:** End-to-end quality is assessed separately using retrieval metrics and LLM-based judges.
+### 🆚 Relation to Prior Work
 
----
+Unlike commercial systems such as NotebookLM or Semantic Scholar AI, our approach offers:
+
+User Control: Operates on a fully user-controlled corpus.
+
+Full Visibility: Exposes the complete retrieval and generation pipeline.
+
+Research Platform: Enables systematic evaluation of individual components (Chunking vs. Retrieval vs. Generation).
+
+### ⚠️ Current Limitations
+
+Focus: The pipeline currently prioritizes correctness, grounding, and interpretability over aggressive speed optimization.
+
+Evaluation: End-to-end quality is assessed separately using retrieval metrics and LLM-based judges.
 
 
