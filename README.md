@@ -196,5 +196,59 @@ Training experiments were monitored using **CodeCarbon**, ensuring:
 
 ---
 
+## 🔎 Transition to Semantic Retrieval
+
+While **SciBERT** is highly effective for the initial binary classification (filtering NLP vs. non-NLP papers), it is not optimized for ranking documents based on query relevance.
+
+The next stage of the project introduces **Sentence-BERT (SBERT)** models to handle semantic retrieval and ranking, replacing traditional TF-IDF-based approaches.
+
+### Semantic Retrieval with SBERT
+
+#### Objective
+
+After filtering papers with SciBERT, we rank the accepted papers by semantic relevance to a user's query. Unlike classical bag-of-words approaches (e.g., TF-IDF), our objective is to capture **semantic similarity** beyond exact lexical overlap. This is crucial in scientific literature where similar concepts are often described using different terminology.
+
+#### Models Compared
+
+We evaluated three Sentence-BERT (SBERT) retrievers:
+
+* **MiniLM** (`all-MiniLM-L6-v2`): A lightweight and efficient model, commonly used as a baseline for semantic search.
+* **MPNet** (`all-mpnet-base-v2`): A higher-capacity model designed to produce more expressive sentence embeddings, often yielding stronger ranking performance.
+* **DistilRoBERTa**: A compressed transformer model that trades some accuracy for reduced computational cost.
+
+All models utilize the same retrieval paradigm (dense embeddings + cosine similarity) but differ in architecture and pretraining objectives.
+
+### Evaluation Protocol
+
+To evaluate semantic retrieval in a controlled and reproducible manner, we use the **SciFact** dataset.
+
+**Why SciFact?**
+
+* **Scientific Domain:** Composed of real scientific abstracts, aligning perfectly with our academic paper retrieval use case.
+* **Ground-Truth Relevance:** Each query (claim) is paired with verified supporting/refuting documents, enabling objective automatic evaluation.
+* **Closed-Corpus Setting:** Matches our system design where retrieval is performed over a specific set of user-provided papers.
+
+#### Metrics
+
+We report standard ranking-based retrieval metrics at cutoff :
+
+* **nDCG@10:** Evaluates ranking quality by rewarding relevant documents appearing at higher ranks.
+* **MAP@10:** Measures average precision across all queries, capturing ranking consistency.
+* **Recall@10:** Indicates whether relevant documents are retrieved within the top 10 results.
+* **Precision@10 (P@10):** Measures the proportion of relevant documents in the top 10. *Note: This is typically low in scientific retrieval as usually only 1-2 documents are relevant per query.*
+
+### 📊 Results
+
+| Model | nDCG@10 | MAP@10 | Recall@10 | P@10 |
+| --- | --- | --- | --- | --- |
+| **MPNet** | **0.65570** | **0.60827** | **0.79011** | **0.08933** |
+| MiniLM | 0.64508 | 0.59593 | 0.78333 | 0.08833 |
+| DistilRoBERTa | 0.63146 | 0.57580 | 0.78789 | 0.08900 |
+
+> **Note on Metrics:** It is crucial to distinguish between classification and retrieval metrics. While classification F1-scores often exceed 0.95, retrieval tasks involve ranking a large set of candidates for ambiguous queries. Consequently, nDCG and MAP values in the range of **0.60–0.70** represent strong performance in scientific retrieval.
+
+### ✅ Model Selection
+
+Based on the evaluation results, we selected **MPNet** (`all-mpnet-base-v2`) as the default semantic retriever. It achieves the highest nDCG@10 and MAP@10, indicating superior ranking quality and robustness. MiniLM remains available as a fallback for resource-constrained environments.
 
 
