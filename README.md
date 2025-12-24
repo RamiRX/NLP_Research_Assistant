@@ -351,5 +351,4 @@ Unlike commercial tools like **NotebookLM** or **Semantic Scholar AI**, our appr
 
 ---
 
-### هل تود مني أن أقوم بإنشاء ملف كود Python يحاكي جزء الـ "Chunking" المذكور أعلاه باستخدام مكتبة مثل LangChain؟
 
